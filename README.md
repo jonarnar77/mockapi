@@ -101,3 +101,14 @@ curl -X POST http://127.0.0.1:5000/import -H 'Content-Type: application/json' \
 Each entry is added just like calling `/register` and the response includes the
 number of endpoints created.
 
+---
+
+## License
+
+This project is licensed under the MIT License — see LICENSE.
+
+---
+
+## Author
+
+Created with ❤️  by Jon Arnar Jonsson.

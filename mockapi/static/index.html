@@ -3,46 +3,66 @@
 <head>
     <meta charset="utf-8">
     <title>Mock API Manager</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        input, textarea, select { margin: 5px 0; width: 100%; max-width: 400px; }
-        table { border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ccc; padding: 4px 8px; }
-    </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
 </head>
-<body>
-<h1>Mock API Manager</h1>
-<section>
+<body class="p-3">
+<div class="container">
+<h1 class="mb-4">Mock API Manager</h1>
+
+<section class="mb-5">
     <h2>Register Endpoint</h2>
-    <input id="reg-path" placeholder="Path">
-    <input id="reg-methods" placeholder="Methods (e.g. GET,POST)">
-    <select id="reg-type">
-        <option value="json">JSON</option>
-        <option value="html">HTML</option>
-    </select>
-    <textarea id="reg-body" placeholder="Response body"></textarea>
-    <input id="reg-status" type="number" value="200" placeholder="Status code">
-    <button id="reg-submit">Register</button>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <input class="form-control" id="reg-path" placeholder="Path">
+        </div>
+        <div class="col-md-6">
+            <input class="form-control" id="reg-methods" placeholder="Methods (e.g. GET,POST)">
+        </div>
+        <div class="col-md-4">
+            <select class="form-select" id="reg-type">
+                <option value="json">JSON</option>
+                <option value="html">HTML</option>
+            </select>
+        </div>
+        <div class="col-md-8">
+            <input class="form-control" id="reg-status" type="number" value="200" placeholder="Status code">
+        </div>
+        <div class="col-12">
+            <textarea class="form-control" id="reg-body" placeholder="Response body" rows="3"></textarea>
+        </div>
+        <div class="col-12">
+            <button type="button" class="btn btn-primary" id="reg-submit">Register</button>
+        </div>
+    </div>
 </section>
-<section>
+
+<section class="mb-5">
     <h2>Deregister Endpoint</h2>
-    <input id="dereg-path" placeholder="Path">
-    <button id="dereg-submit">Deregister</button>
+    <div class="input-group">
+        <input class="form-control" id="dereg-path" placeholder="Path">
+        <button class="btn btn-danger" id="dereg-submit">Deregister</button>
+    </div>
 </section>
-<section>
+
+<section class="mb-5">
     <h2>Import / Export</h2>
-    <textarea id="import-data" placeholder="Paste JSON list to import"></textarea>
-    <button id="import-submit">Import</button>
-    <button id="export-btn">Export</button>
-    <button id="clear-btn">Clear All</button>
+    <div class="mb-3">
+        <textarea id="import-data" class="form-control" placeholder="Paste JSON list to import" rows="3"></textarea>
+    </div>
+    <button class="btn btn-success me-2" id="import-submit">Import</button>
+    <button class="btn btn-secondary me-2" id="export-btn">Export</button>
+    <button class="btn btn-warning" id="clear-btn">Clear All</button>
 </section>
+
 <section>
     <h2>Registered Endpoints</h2>
-    <table id="endpoint-table">
-        <thead><tr><th>Path</th><th>Methods</th><th>Status</th></tr></thead>
+    <table id="endpoint-table" class="table table-bordered">
+        <thead class="table-light"><tr><th>Path</th><th>Methods</th><th>Status</th></tr></thead>
         <tbody></tbody>
     </table>
 </section>
+
+</div>
 <script>
 async function refreshList() {
     const resp = await fetch('/endpoints');

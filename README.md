@@ -59,9 +59,9 @@ Each entry contains the path, allowed methods and status code. For example:
 
 ## Using the API
 
-Once registered, you can query the mocked endpoint via the `/api/` prefix.
-For example, if you registered `customer/123` you would call
-`GET http://127.0.0.1:5000/api/customer/123` to retrieve the document.
+Once registered, you can query the mocked endpoint via `/api/<path>`.
+For example, `GET /api/customer/123` will return the JSON document above.
+
 
 ### HTML responses and status codes
 

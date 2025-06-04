@@ -49,6 +49,25 @@ def deregister():
     return jsonify({'message': 'deregistered'}), 200
 
 
+@app.route('/endpoints', methods=['GET'])
+def list_endpoints():
+    """Return all registered endpoints with their allowed methods and status codes."""
+    conn = get_connection()
+    c = conn.cursor()
+    c.execute('SELECT path, methods, status_code FROM endpoints ORDER BY path')
+    rows = c.fetchall()
+    conn.close()
+    endpoints = [
+        {
+            'path': row['path'],
+            'methods': row['methods'].split(','),
+            'status_code': row['status_code'],
+        }
+        for row in rows
+    ]
+    return jsonify(endpoints)
+  
+
 @app.route('/api/<path:endpoint_path>', methods=['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
 def api(endpoint_path):
     conn = get_connection()

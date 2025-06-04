@@ -95,3 +95,20 @@ def test_html_responses(client):
     resp = client.get("/api/error")
     assert resp.status_code == 500
     assert resp.get_data(as_text=True) == "<h1>Internal Server Error</h1>"
+
+
+def test_list_endpoints(client):
+    data = {
+        "path": "customer/123",
+        "methods": ["GET"],
+        "response_type": "json",
+        "response_body": json.dumps({"id": 123}),
+        "status_code": 200,
+    }
+    client.post("/register", json=data)
+
+    resp = client.get("/endpoints")
+    assert resp.status_code == 200
+    assert resp.get_json() == [
+        {"path": "customer/123", "methods": ["GET"], "status_code": 200}
+    ]

@@ -16,7 +16,9 @@ Run the application:
 python -m mockapi.app
 ```
 
-This will start the server on `http://localhost:5000`.
+This will start the server on `http://127.0.0.1:5000`. If you use
+`localhost` and your system prefers IPv6, you might hit another service
+listening on port 5000. Using the IPv4 address avoids that issue.
 
 ## Registering an endpoint
 
@@ -40,10 +42,26 @@ Send a POST request to `/deregister` with a JSON body containing the path:
 { "path": "customer/123" }
 ```
 
+## Listing registered endpoints
+
+Call `GET /endpoints` to retrieve a JSON array of all registered endpoints.
+Each entry contains the path, allowed methods and status code. For example:
+
+```json
+[
+  {
+    "path": "customer/123",
+    "methods": ["GET"],
+    "status_code": 200
+  }
+]
+```
+
 ## Using the API
 
 Once registered, you can query the mocked endpoint via `/api/<path>`.
 For example, `GET /api/customer/123` will return the JSON document above.
+
 
 ### HTML responses and status codes
 
@@ -52,12 +70,13 @@ example, to register an endpoint that returns a welcome page and another that
 returns a 500 error:
 
 ```bash
-curl -X POST http://localhost:5000/register -H 'Content-Type: application/json' \
+curl -X POST http://127.0.0.1:5000/register -H 'Content-Type: application/json' \
   -d '{"path":"welcome","methods":["GET"],"response_type":"html","response_body":"<h1>Welcome</h1>","status_code":200}'
 
-curl -X POST http://localhost:5000/register -H 'Content-Type: application/json' \
+curl -X POST http://127.0.0.1:5000/register -H 'Content-Type: application/json' \
   -d '{"path":"error","methods":["GET"],"response_type":"html","response_body":"<h1>Internal Server Error</h1>","status_code":500}'
 ```
 
-After registering, `GET /api/welcome` returns the HTML welcome page with status
-200, while `GET /api/error` returns the error page with status 500.
+After registering, `GET http://127.0.0.1:5000/api/welcome` returns the HTML
+welcome page with status 200, while
+`GET http://127.0.0.1:5000/api/error` returns the error page with status 500.

@@ -1,2 +1,63 @@
 # mockapi
-Mock API Service
+
+A simple Flask-based mock API service using SQLite for storage.
+
+## Setup
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+Run the application:
+
+```bash
+python -m mockapi.app
+```
+
+This will start the server on `http://localhost:5000`.
+
+## Registering an endpoint
+
+Send a POST request to `/register` with a JSON body:
+
+```json
+{
+  "path": "customer/123",
+  "methods": ["GET"],
+  "response_type": "json",
+  "response_body": "{\"id\":123,\"name\":\"John Doe\",\"email\":\"john@doe.com\"}",
+  "status_code": 200
+}
+```
+
+## Deregistering
+
+Send a POST request to `/deregister` with a JSON body containing the path:
+
+```json
+{ "path": "customer/123" }
+```
+
+## Using the API
+
+Once registered, you can query the mocked endpoint via `/api/<path>`.
+For example, `GET /api/customer/123` will return the JSON document above.
+
+### HTML responses and status codes
+
+You can also register endpoints that return HTML with custom status codes. For
+example, to register an endpoint that returns a welcome page and another that
+returns a 500 error:
+
+```bash
+curl -X POST http://localhost:5000/register -H 'Content-Type: application/json' \
+  -d '{"path":"welcome","methods":["GET"],"response_type":"html","response_body":"<h1>Welcome</h1>","status_code":200}'
+
+curl -X POST http://localhost:5000/register -H 'Content-Type: application/json' \
+  -d '{"path":"error","methods":["GET"],"response_type":"html","response_body":"<h1>Internal Server Error</h1>","status_code":500}'
+```
+
+After registering, `GET /api/welcome` returns the HTML welcome page with status
+200, while `GET /api/error` returns the error page with status 500.

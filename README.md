@@ -59,9 +59,9 @@ Each entry contains the path, allowed methods and status code. For example:
 
 ## Using the API
 
-Once registered, you can query the mocked endpoint via `/api/<path>`.
-For example, `GET /api/customer/123` will return the JSON document above.
-
+Once registered, you can query the mocked endpoint via the `/api/` prefix.
+For example, if you registered `customer/123` you would call
+`GET http://127.0.0.1:5000/api/customer/123` to retrieve the document.
 
 ### HTML responses and status codes
 
@@ -80,3 +80,24 @@ curl -X POST http://127.0.0.1:5000/register -H 'Content-Type: application/json' 
 After registering, `GET http://127.0.0.1:5000/api/welcome` returns the HTML
 welcome page with status 200, while
 `GET http://127.0.0.1:5000/api/error` returns the error page with status 500.
+
+## Importing and exporting
+
+You can export all registered endpoints with:
+
+```bash
+curl http://127.0.0.1:5000/export
+```
+
+This returns a JSON array with the full definitions including response bodies.
+
+To import multiple endpoints in one call, POST the JSON back to `/import`:
+
+```bash
+curl -X POST http://127.0.0.1:5000/import -H 'Content-Type: application/json' \
+  -d '[{"path":"foo","methods":["GET"],"response_type":"json","response_body":"{}","status_code":200}]'
+```
+
+Each entry is added just like calling `/register` and the response includes the
+number of endpoints created.
+

@@ -112,3 +112,70 @@ def test_list_endpoints(client):
     assert resp.get_json() == [
         {"path": "customer/123", "methods": ["GET"], "status_code": 200}
     ]
+
+
+def test_export(client):
+    foo = {
+        "path": "foo",
+        "methods": ["GET"],
+        "response_type": "json",
+        "response_body": json.dumps({"foo": True}),
+        "status_code": 200,
+    }
+    bar = {
+        "path": "bar",
+        "methods": ["POST"],
+        "response_type": "html",
+        "response_body": "<p>bar</p>",
+        "status_code": 201,
+    }
+    client.post("/register", json=foo)
+    client.post("/register", json=bar)
+
+    resp = client.get("/export")
+    assert resp.status_code == 200
+    assert {
+        "path": "foo",
+        "methods": ["GET"],
+        "response_type": "json",
+        "response_body": "{\"foo\": true}",
+        "status_code": 200,
+    } in resp.get_json()
+    assert {
+        "path": "bar",
+        "methods": ["POST"],
+        "response_type": "html",
+        "response_body": "<p>bar</p>",
+        "status_code": 201,
+    } in resp.get_json()
+
+
+def test_import(client):
+    data = [
+        {
+            "path": "foo",
+            "methods": ["GET"],
+            "response_type": "json",
+            "response_body": json.dumps({"foo": True}),
+            "status_code": 200,
+        },
+        {
+            "path": "bar",
+            "methods": ["GET"],
+            "response_type": "html",
+            "response_body": "<p>bar</p>",
+            "status_code": 200,
+        },
+    ]
+
+    resp = client.post("/import", json=data)
+    assert resp.status_code == 201
+    assert resp.get_json()["count"] == 2
+
+    resp = client.get("/api/foo")
+    assert resp.status_code == 200
+    assert resp.get_json() == {"foo": True}
+
+    resp = client.get("/api/bar")
+    assert resp.status_code == 200
+    assert resp.get_data(as_text=True) == "<p>bar</p>"

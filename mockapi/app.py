@@ -66,7 +66,61 @@ def list_endpoints():
         for row in rows
     ]
     return jsonify(endpoints)
-  
+
+
+@app.route('/export', methods=['GET'])
+def export_endpoints():
+    """Return full endpoint definitions for backup or transfer."""
+    conn = get_connection()
+    c = conn.cursor()
+    c.execute(
+        'SELECT path, methods, response_type, response_body, status_code FROM endpoints ORDER BY path'
+    )
+    rows = c.fetchall()
+    conn.close()
+    endpoints = [
+        {
+            'path': row['path'],
+            'methods': row['methods'].split(','),
+            'response_type': row['response_type'],
+            'response_body': row['response_body'],
+            'status_code': row['status_code'],
+        }
+        for row in rows
+    ]
+    return jsonify(endpoints)
+
+
+@app.route('/import', methods=['POST'])
+def import_endpoints():
+    """Create endpoints from a list of definitions."""
+    data = request.get_json(force=True)
+    if not isinstance(data, list):
+        return jsonify({'error': 'list required'}), 400
+
+    conn = get_connection()
+    c = conn.cursor()
+    count = 0
+    for item in data:
+        path = item.get('path')
+        if not path:
+            continue
+        methods = ','.join(item.get('methods', ['GET']))
+        response_type = item.get('response_type', 'json')
+        response_body = item.get('response_body', '')
+        status_code = int(item.get('status_code', 200))
+        try:
+            c.execute(
+                'INSERT INTO endpoints (path, methods, response_type, response_body, status_code) VALUES (?,?,?,?,?)',
+                (path, methods, response_type, response_body, status_code),
+            )
+            count += 1
+        except sqlite3.IntegrityError:
+            pass
+    conn.commit()
+    conn.close()
+    return jsonify({'message': 'imported', 'count': count}), 201
+
 
 @app.route('/api/<path:endpoint_path>', methods=['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
 def api(endpoint_path):

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Mock API Manager</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+</head>
+<body class="p-3">
+<div class="container">
+<h1 class="mb-4">Mock API Manager</h1>
+
+<section class="mb-5">
+    <h2>Register Endpoint</h2>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <input class="form-control" id="reg-path" placeholder="Path">
+        </div>
+        <div class="col-md-6">
+            <input class="form-control" id="reg-methods" placeholder="Methods (e.g. GET,POST)">
+        </div>
+        <div class="col-md-4">
+            <select class="form-select" id="reg-type">
+                <option value="json">JSON</option>
+                <option value="html">HTML</option>
+            </select>
+        </div>
+        <div class="col-md-8">
+            <input class="form-control" id="reg-status" type="number" value="200" placeholder="Status code">
+        </div>
+        <div class="col-12">
+            <textarea class="form-control" id="reg-body" placeholder="Response body" rows="3"></textarea>
+        </div>
+        <div class="col-12">
+            <button type="button" class="btn btn-primary" id="reg-submit">Register</button>
+        </div>
+    </div>
+</section>
+
+<section class="mb-5">
+    <h2>Deregister Endpoint</h2>
+    <div class="input-group">
+        <input class="form-control" id="dereg-path" placeholder="Path">
+        <button class="btn btn-danger" id="dereg-submit">Deregister</button>
+    </div>
+</section>
+
+<section class="mb-5">
+    <h2>Import / Export</h2>
+    <div class="mb-3">
+        <textarea id="import-data" class="form-control" placeholder="Paste JSON list to import" rows="3"></textarea>
+    </div>
+    <button class="btn btn-success me-2" id="import-submit">Import</button>
+    <button class="btn btn-secondary me-2" id="export-btn">Export</button>
+    <button class="btn btn-warning" id="clear-btn">Clear All</button>
+</section>
+
+<section>
+    <h2>Registered Endpoints</h2>
+    <table id="endpoint-table" class="table table-bordered">
+        <thead class="table-light"><tr><th>Path</th><th>Methods</th><th>Status</th></tr></thead>
+        <tbody></tbody>
+    </table>
+</section>
+
+</div>
+<script>
+async function refreshList() {
+    const resp = await fetch('/endpoints');
+    const data = await resp.json();
+    const tbody = document.querySelector('#endpoint-table tbody');
+    tbody.innerHTML = '';
+    for (const ep of data) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${ep.path}</td><td>${ep.methods.join(', ')}</td><td>${ep.status_code}</td>`;
+        tbody.appendChild(tr);
+    }
+}
+
+document.getElementById('reg-submit').onclick = async () => {
+    const body = {
+        path: document.getElementById('reg-path').value,
+        methods: document.getElementById('reg-methods').value.split(',').map(m => m.trim()).filter(Boolean),
+        response_type: document.getElementById('reg-type').value,
+        response_body: document.getElementById('reg-body').value,
+        status_code: parseInt(document.getElementById('reg-status').value || '200')
+    };
+    await fetch('/register', {method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+    refreshList();
+};
+
+document.getElementById('dereg-submit').onclick = async () => {
+    const body = {path: document.getElementById('dereg-path').value};
+    await fetch('/deregister', {method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+    refreshList();
+};
+
+document.getElementById('clear-btn').onclick = async () => {
+    await fetch('/clear', {method: 'POST'});
+    refreshList();
+};
+
+document.getElementById('export-btn').onclick = async () => {
+    const resp = await fetch('/export');
+    const data = await resp.json();
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'endpoints.json';
+    a.click();
+    URL.revokeObjectURL(url);
+};
+
+document.getElementById('import-submit').onclick = async () => {
+    let data;
+    try { data = JSON.parse(document.getElementById('import-data').value); }
+    catch(e){ alert('Invalid JSON'); return; }
+    await fetch('/import', {method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data)});
+    refreshList();
+};
+
+refreshList();
+</script>
+</body>
+</html>

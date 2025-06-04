@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Mock API Manager</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        input, textarea, select { margin: 5px 0; width: 100%; max-width: 400px; }
+        table { border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 4px 8px; }
+    </style>
+</head>
+<body>
+<h1>Mock API Manager</h1>
+<section>
+    <h2>Register Endpoint</h2>
+    <input id="reg-path" placeholder="Path">
+    <input id="reg-methods" placeholder="Methods (e.g. GET,POST)">
+    <select id="reg-type">
+        <option value="json">JSON</option>
+        <option value="html">HTML</option>
+    </select>
+    <textarea id="reg-body" placeholder="Response body"></textarea>
+    <input id="reg-status" type="number" value="200" placeholder="Status code">
+    <button id="reg-submit">Register</button>
+</section>
+<section>
+    <h2>Deregister Endpoint</h2>
+    <input id="dereg-path" placeholder="Path">
+    <button id="dereg-submit">Deregister</button>
+</section>
+<section>
+    <h2>Import / Export</h2>
+    <textarea id="import-data" placeholder="Paste JSON list to import"></textarea>
+    <button id="import-submit">Import</button>
+    <button id="export-btn">Export</button>
+    <button id="clear-btn">Clear All</button>
+</section>
+<section>
+    <h2>Registered Endpoints</h2>
+    <table id="endpoint-table">
+        <thead><tr><th>Path</th><th>Methods</th><th>Status</th></tr></thead>
+        <tbody></tbody>
+    </table>
+</section>
+<script>
+async function refreshList() {
+    const resp = await fetch('/endpoints');
+    const data = await resp.json();
+    const tbody = document.querySelector('#endpoint-table tbody');
+    tbody.innerHTML = '';
+    for (const ep of data) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${ep.path}</td><td>${ep.methods.join(', ')}</td><td>${ep.status_code}</td>`;
+        tbody.appendChild(tr);
+    }
+}
+
+document.getElementById('reg-submit').onclick = async () => {
+    const body = {
+        path: document.getElementById('reg-path').value,
+        methods: document.getElementById('reg-methods').value.split(',').map(m => m.trim()).filter(Boolean),
+        response_type: document.getElementById('reg-type').value,
+        response_body: document.getElementById('reg-body').value,
+        status_code: parseInt(document.getElementById('reg-status').value || '200')
+    };
+    await fetch('/register', {method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+    refreshList();
+};
+
+document.getElementById('dereg-submit').onclick = async () => {
+    const body = {path: document.getElementById('dereg-path').value};
+    await fetch('/deregister', {method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+    refreshList();
+};
+
+document.getElementById('clear-btn').onclick = async () => {
+    await fetch('/clear', {method: 'POST'});
+    refreshList();
+};
+
+document.getElementById('export-btn').onclick = async () => {
+    const resp = await fetch('/export');
+    const data = await resp.json();
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'endpoints.json';
+    a.click();
+    URL.revokeObjectURL(url);
+};
+
+document.getElementById('import-submit').onclick = async () => {
+    let data;
+    try { data = JSON.parse(document.getElementById('import-data').value); }
+    catch(e){ alert('Invalid JSON'); return; }
+    await fetch('/import', {method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data)});
+    refreshList();
+};
+
+refreshList();
+</script>
+</body>
+</html>

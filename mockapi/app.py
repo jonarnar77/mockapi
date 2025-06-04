@@ -3,7 +3,13 @@ import json
 from flask import Flask, request, jsonify, make_response
 from .database import get_connection, init_db
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
+
+
+@app.route('/')
+def ui():
+    """Serve the simple management interface."""
+    return app.send_static_file('index.html')
 
 init_db()
 

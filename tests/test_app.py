@@ -179,3 +179,8 @@ def test_import(client):
     resp = client.get("/api/bar")
     assert resp.status_code == 200
     assert resp.get_data(as_text=True) == "<p>bar</p>"
+
+def test_ui_page(client):
+    resp = client.get('/')
+    assert resp.status_code == 200
+    assert b"Mock API Manager" in resp.data

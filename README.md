@@ -20,6 +20,12 @@ This will start the server on `http://127.0.0.1:5000`. If you use
 `localhost` and your system prefers IPv6, you might hit another service
 listening on port 5000. Using the IPv4 address avoids that issue.
 
+## Web UI
+
+Opening `http://127.0.0.1:5000/` in your browser loads a simple UI for
+managing endpoints. It lets you register, deregister, clear, export and
+import endpoints and shows a table of all current registrations.
+
 ## Registering an endpoint
 
 Send a POST request to `/register` with a JSON body:

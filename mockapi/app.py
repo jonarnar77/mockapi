@@ -68,6 +68,17 @@ def list_endpoints():
     return jsonify(endpoints)
 
 
+@app.route('/clear', methods=['POST'])
+def clear():
+    """Delete all registered endpoints."""
+    conn = get_connection()
+    c = conn.cursor()
+    c.execute('DELETE FROM endpoints')
+    conn.commit()
+    conn.close()
+    return jsonify({'message': 'cleared'}), 200
+
+
 @app.route('/export', methods=['GET'])
 def export_endpoints():
     """Return full endpoint definitions for backup or transfer."""

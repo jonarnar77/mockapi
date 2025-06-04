@@ -144,5 +144,4 @@ def api(endpoint_path):
 
 
 if __name__ == '__main__':
-    # Listen on all interfaces so both IPv4 and IPv6 clients can connect
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=True)
